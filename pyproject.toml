@@ -23,6 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 listen = ["onnxruntime>=1.16", "sounddevice>=0.4.6"]
+dads = ["datasets[audio]>=2.14"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

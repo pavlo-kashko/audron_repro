@@ -98,6 +98,17 @@ python -m audron.scripts.train   --config configs/paper/binary_augmented.yaml   
 
 Requires `data/raw/DroneAudioDataset/Binary_Drone_Audio/unknown` for background noise mixing, or set `data.augmentation.background_noise.enabled: false` in the config.
 
+**Combined binary (DroneAudio + DADS):** [DADS](https://huggingface.co/datasets/geronimobasso/drone-audio-detection-samples) is a large public drone/no-drone dataset (16 kHz, same labels 0=noise, 1=drone). To merge it with DroneAudio and train on both:
+
+```bash
+pip install 'datasets[audio]' soundfile
+python -m audron.scripts.prepare_dads --output-dir data/processed/dads --max-per-class 20000 --val-fraction 0.2
+python -m audron.scripts.prepare_combined_binary --output-dir data/processed/binary_combined
+python -m audron.scripts.train   --config configs/paper/binary_combined.yaml   --train-manifest data/processed/binary_combined/train.jsonl   --val-manifest data/processed/binary_combined/val.jsonl   --output-dir runs/binary_combined
+```
+
+Omit `--max-per-class` to use the full DADS (~180k samples; first run downloads ~6.8 GB).
+
 Train multiclass:
 
 ```bash
@@ -123,6 +134,8 @@ python -m audron.scripts.listen_drone --onnx runs/binary_no_aug/best.onnx --thre
 - **--threshold**: minimum P(drone) to trigger (default 0.6).
 - **--alert-cooldown**: seconds between alerts to avoid spam (default 10).
 - **--quiet**: only print when drone detected. Press Ctrl+C to stop.
+
+**iPhone demo:** For running the model on-device (Core ML or ONNX Runtime) or via a server, see [docs/IPHONE_DEMO.md](docs/IPHONE_DEMO.md).
 
 ## Paper-aligned implementation notes
 
