@@ -5,7 +5,7 @@ seed: 42
 
 data:
   sample_rate: 16000
-  clip_duration_sec: 3.0
+  clip_duration_sec: 0.5
   pad_mode: repeat
   normalize_audio: true
   augmentation:
@@ -45,7 +45,7 @@ model:
   autoencoder_dropout: 0.2
 
 train:
-  epochs: 50
+  epochs: 20
   batch_size: 16
   lr: 0.001
   weight_decay: 0.0001
