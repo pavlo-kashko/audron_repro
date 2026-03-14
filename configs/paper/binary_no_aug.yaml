@@ -4,7 +4,7 @@ seed: 42
 
 data:
   sample_rate: 16000   # matches DroneAudioDataset
-  clip_duration_sec: 3.0   # model expects 48k samples; ~1 s clips are repeat-padded
+  clip_duration_sec: 1.0   # model expects 48k samples; ~1 s clips are repeat-padded
   pad_mode: repeat
   normalize_audio: true
 

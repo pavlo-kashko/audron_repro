@@ -101,6 +101,20 @@ Evaluate:
 python -m audron.scripts.evaluate   --config configs/paper/multiclass_real.yaml   --manifest data/processed/multiclass_real/val.jsonl   --checkpoint runs/multiclass_real/best.pt   --output-dir runs/multiclass_real/eval
 ```
 
+## Live drone detection (listen + alert)
+
+After training a **binary** model (drone vs noise) and exporting to ONNX, you can run a continuous listener that uses the default microphone and prints (and optionally beeps) when a drone is detected:
+
+```bash
+pip install onnxruntime sounddevice
+python -m audron.scripts.export_onnx --checkpoint runs/binary_no_aug/best.pt --output runs/binary_no_aug/best.onnx --dynamic
+python -m audron.scripts.listen_drone --onnx runs/binary_no_aug/best.onnx --threshold 0.6 --alert-cooldown 10
+```
+
+- **--threshold**: minimum P(drone) to trigger (default 0.6).
+- **--alert-cooldown**: seconds between alerts to avoid spam (default 10).
+- **--quiet**: only print when drone detected. Press Ctrl+C to stop.
+
 ## Paper-aligned implementation notes
 
 The paper gives the high-level architecture and several dimensionalities, but not every low-level hyperparameter. This repo follows the paper exactly where the paper is explicit, and uses transparent defaults where it is not.

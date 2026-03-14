@@ -21,5 +21,8 @@ dependencies = [
   "torch>=2.1"
 ]
 
+[project.optional-dependencies]
+listen = ["onnxruntime>=1.16", "sounddevice>=0.4.6"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
