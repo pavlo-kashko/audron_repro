@@ -4,7 +4,7 @@ seed: 42
 
 data:
   sample_rate: 16000
-  clip_duration_sec: 3.0
+  clip_duration_sec: 1.0
   pad_mode: repeat
   normalize_audio: true
   augmentation:
