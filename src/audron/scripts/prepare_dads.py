@@ -50,7 +50,7 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        from datasets import load_dataset
+        from datasets import Audio, load_dataset
     except ImportError:
         raise SystemExit("Install Hugging Face datasets: pip install 'datasets[audio]'")
 
@@ -64,6 +64,8 @@ def main() -> None:
         split="train",
         trust_remote_code=args.trust_remote_code,
     )
+    # Cast audio column so each row["audio"] decodes to {"array": ndarray, "sampling_rate": int}
+    ds = ds.cast_column("audio", Audio(sampling_rate=TARGET_SR))
 
     # Collect indices per class for stratified subsampling (DADS: 0 = no drone, 1 = drone)
     label_col = "label" if "label" in ds.column_names else "class"
@@ -107,12 +109,21 @@ def main() -> None:
         subdir.mkdir(parents=True, exist_ok=True)
         row = ds[idx]
         audio = row["audio"]
+        # HF Audio column can be dict or AudioDecoder-like; extract array and sampling_rate
         if isinstance(audio, dict):
             arr = np.asarray(audio["array"], dtype=np.float32)
             sr = int(audio.get("sampling_rate", TARGET_SR))
+        elif hasattr(audio, "get") and callable(audio.get):
+            arr = np.asarray(audio.get("array"), dtype=np.float32)
+            sr = int(audio.get("sampling_rate", TARGET_SR))
+        elif hasattr(audio, "array"):
+            arr = np.asarray(audio.array, dtype=np.float32)
+            sr = int(getattr(audio, "sampling_rate", TARGET_SR))
+        elif hasattr(audio, "__getitem__"):
+            arr = np.asarray(audio["array"], dtype=np.float32)
+            sr = int(audio.get("sampling_rate", TARGET_SR) if hasattr(audio, "get") else TARGET_SR)
         else:
-            arr = np.asarray(audio, dtype=np.float32)
-            sr = TARGET_SR
+            raise TypeError(f"Unexpected audio type: {type(audio)}; use datasets with decode=True for audio column")
         if arr.ndim > 1:
             arr = arr.mean(axis=1)
         if sr != TARGET_SR:
