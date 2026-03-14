@@ -23,6 +23,7 @@ The code is organized like a small research repo and aims to stay close to the p
   - early stopping
   - combined CE + weighted reconstruction MSE loss
 - Ablation-ready branch toggles via `model.enabled_branches`
+- **On-the-fly data augmentation** for robustness: Gaussian noise, gain jitter, background noise mixing, time masking, time stretch (config-driven; see `configs/paper/binary_augmented.yaml`).
 - A smoke config for constrained environments and paper-sized configs for actual reproduction runs.
 
 ## Repo layout
@@ -83,11 +84,19 @@ Train binary no augmentation:
 python -m audron.scripts.train   --config configs/paper/binary_no_aug.yaml   --train-manifest data/processed/binary_no_aug/train.jsonl   --val-manifest data/processed/binary_no_aug/val.jsonl   --output-dir runs/binary_no_aug
 ```
 
-Train binary with augmentation:
+Train binary with augmentation (extra drone clips):
 
 ```bash
 python -m audron.scripts.train   --config configs/paper/binary_with_aug.yaml   --train-manifest data/processed/binary_with_aug/train.jsonl   --val-manifest data/processed/binary_with_aug/val.jsonl   --output-dir runs/binary_with_aug
 ```
+
+Train binary with **on-the-fly SOTA augmentation** (noise, gain, background mix, time mask, time stretch) for robustness:
+
+```bash
+python -m audron.scripts.train   --config configs/paper/binary_augmented.yaml   --train-manifest data/processed/binary_no_aug/train.jsonl   --val-manifest data/processed/binary_no_aug/val.jsonl   --output-dir runs/binary_augmented
+```
+
+Requires `data/raw/DroneAudioDataset/Binary_Drone_Audio/unknown` for background noise mixing, or set `data.augmentation.background_noise.enabled: false` in the config.
 
 Train multiclass:
 

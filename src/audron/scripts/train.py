@@ -53,6 +53,8 @@ def main() -> None:
         clip_duration_sec=cfg['data']['clip_duration_sec'],
         pad_mode=cfg['data'].get('pad_mode', 'repeat'),
         normalize_audio=cfg['data'].get('normalize_audio', True),
+        train=True,
+        data_cfg=cfg['data'],
     )
     val_ds = AudioManifestDataset(
         args.val_manifest,
@@ -60,6 +62,7 @@ def main() -> None:
         clip_duration_sec=cfg['data']['clip_duration_sec'],
         pad_mode=cfg['data'].get('pad_mode', 'repeat'),
         normalize_audio=cfg['data'].get('normalize_audio', True),
+        train=False,
     )
 
     train_loader = DataLoader(train_ds, batch_size=cfg['train']['batch_size'], shuffle=True, num_workers=cfg['train']['num_workers'])
