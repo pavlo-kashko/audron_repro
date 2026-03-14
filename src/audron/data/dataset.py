@@ -43,7 +43,12 @@ class AudioManifestDataset(Dataset):
                 candidate = self.base_dir.parent / audio_path
                 if candidate.exists():
                     audio_path = candidate
-        waveform = load_audio(audio_path, sample_rate=self.sample_rate)
+        if not audio_path.exists():
+            raise FileNotFoundError(f"Audio file not found: {audio_path} (from manifest row {idx})")
+        try:
+            waveform = load_audio(audio_path, sample_rate=self.sample_rate)
+        except Exception as e:
+            raise RuntimeError(f"Failed to load audio: {audio_path} (manifest row {idx})") from e
         waveform = fit_audio_length(waveform, self.target_length, pad_mode=self.pad_mode)
         if self.normalize_audio:
             waveform = peak_normalize(waveform)

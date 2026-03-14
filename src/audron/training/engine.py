@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 
 from audron.training.losses import AudronLoss
 from audron.utils.metrics import compute_metrics
@@ -52,7 +51,7 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool) -> dict[
         recon_loss.append(parts['reconstruction_loss'])
 
     metrics = compute_metrics(y_true, y_pred, average='weighted')
-    return {
+    out = {
         'loss': float(np.mean(total_loss)),
         'classification_loss': float(np.mean(cls_loss)),
         'reconstruction_loss': float(np.mean(recon_loss)),
@@ -62,6 +61,11 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool) -> dict[
         'f1': metrics.f1,
         'confusion': metrics.confusion.tolist(),
     }
+    if metrics.precision_per_class is not None:
+        out['precision_per_class'] = metrics.precision_per_class
+    if metrics.recall_per_class is not None:
+        out['recall_per_class'] = metrics.recall_per_class
+    return out
 
 
 def fit(
@@ -100,12 +104,15 @@ def fit(
         epoch_elapsed = time.perf_counter() - epoch_start
         scheduler.step(val_stats['accuracy'])
 
-        print(
+        line = (
             f'epoch {epoch}/{train_cfg["epochs"]}  '
             f'train_loss={train_stats["loss"]:.4f} train_acc={train_stats["accuracy"]:.4f}  '
             f'val_loss={val_stats["loss"]:.4f} val_acc={val_stats["accuracy"]:.4f}  '
             f'time={epoch_elapsed:.1f}s'
         )
+        if val_stats.get('recall_per_class') and len(val_stats['recall_per_class']) == 2:
+            line += f"  val_recall: noise={val_stats['recall_per_class'][0]:.3f} drone={val_stats['recall_per_class'][1]:.3f}"
+        print(line)
 
         history.train_loss.append(train_stats['loss'])
         history.val_loss.append(val_stats['loss'])
@@ -144,7 +151,7 @@ def fit(
 def evaluate(model, loader: DataLoader, cfg: dict, checkpoint_path: str | Path, output_dir: str | Path, device: torch.device) -> dict[str, Any]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model.load_state_dict(checkpoint['model'])
     criterion = AudronLoss(reconstruction_weight=float(cfg['train']['reconstruction_weight']))
     stats = run_epoch(model, loader, criterion, optimizer=None, device=device, train=False)

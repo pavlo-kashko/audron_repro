@@ -32,6 +32,7 @@ train:
   scheduler_patience: 5
   early_stopping_patience: 10
   reconstruction_weight: 0.1
+  class_weights: balanced
   num_workers: 0
   torch_num_threads: 1
 
