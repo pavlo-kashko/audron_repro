@@ -30,7 +30,7 @@ except ImportError:
 
 
 SAMPLE_RATE = 16000
-WINDOW_DURATION_SEC = 3.0
+WINDOW_DURATION_SEC = 1.0
 HOP_DURATION_SEC = 0.1
 WINDOW_SAMPLES = int(SAMPLE_RATE * WINDOW_DURATION_SEC)
 HOP_SAMPLES = int(SAMPLE_RATE * HOP_DURATION_SEC)
@@ -55,7 +55,7 @@ def main() -> None:
     )
     parser.add_argument("--onnx", type=Path, required=True, help="Path to binary ONNX model (best.onnx).")
     parser.add_argument("--threshold", type=float, default=0.6, help="Drone probability threshold to trigger alert (0–1).")
-    parser.add_argument("--alert-cooldown", type=float, default=10.0, help="Min seconds between alerts.")
+    parser.add_argument("--alert-cooldown", type=float, default=0, help="Min seconds between alerts.")
     parser.add_argument("--sample-rate", type=int, default=SAMPLE_RATE, help="Microphone sample rate (must match model).")
     parser.add_argument("--window", type=float, default=WINDOW_DURATION_SEC, help="Window length in seconds (model input, default 3 s).")
     parser.add_argument("--hop", type=float, default=HOP_DURATION_SEC, help="Hop between inferences in seconds (default 0.1 s).")
