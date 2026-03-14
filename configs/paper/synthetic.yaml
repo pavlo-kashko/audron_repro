@@ -1,0 +1,41 @@
+seed: 42
+
+data:
+  sample_rate: 16000
+  clip_duration_sec: 3.0
+  pad_mode: repeat
+  normalize_audio: true
+
+model:
+  enabled_branches: [mfcc, stft, rnn, autoencoder]
+  frontend:
+    n_fft: 1024
+    hop_length: 256
+    win_length: 1024
+    n_mels: 64
+    n_mfcc: 13
+    fmin: 0.0
+    fmax: 8000.0
+  mfcc_dim: 128
+  stft_dim: 256
+  rnn_hidden: 128
+  rnn_dim: 192
+  autoencoder_dims: [2048, 1024, 512, 160]
+  autoencoder_dropout: 0.2
+
+train:
+  epochs: 50
+  batch_size: 16
+  lr: 0.001
+  weight_decay: 0.0001
+  lr_factor: 0.5
+  scheduler_patience: 5
+  early_stopping_patience: 10
+  reconstruction_weight: 0.1
+  num_workers: 0
+  torch_num_threads: 1
+
+task:
+  name: synthetic
+  num_classes: 4
+  class_names: [quadcopter, hexacopter, octocopter, racing_drone]
