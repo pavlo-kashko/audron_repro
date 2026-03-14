@@ -64,11 +64,25 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool) -> dict[
     }
 
 
-def fit(model, train_loader: DataLoader, val_loader: DataLoader, cfg: dict, output_dir: str | Path, device: torch.device) -> dict[str, Any]:
+def fit(
+    model,
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    cfg: dict,
+    output_dir: str | Path,
+    device: torch.device,
+    class_weights: torch.Tensor | None = None,
+) -> dict[str, Any]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     train_cfg = cfg['train']
-    criterion = AudronLoss(reconstruction_weight=float(train_cfg['reconstruction_weight']))
+    weights = None
+    if class_weights is not None:
+        weights = class_weights.to(device, dtype=torch.float32)
+    criterion = AudronLoss(
+        reconstruction_weight=float(train_cfg['reconstruction_weight']),
+        class_weights=weights,
+    )
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(train_cfg['lr']), weight_decay=float(train_cfg['weight_decay']))
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=float(train_cfg['lr_factor']), patience=int(train_cfg['scheduler_patience']))
 

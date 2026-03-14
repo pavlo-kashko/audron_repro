@@ -1,3 +1,4 @@
+# DroneAudioDataset (multiclass): 16 kHz, mono; clips ~0.75–1.2 s. Padded to 3 s (repeat) for fixed input.
 seed: 42
 
 data:

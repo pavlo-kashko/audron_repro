@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import torch
 import torch.nn as nn
 
 
 class AudronLoss(nn.Module):
-    def __init__(self, reconstruction_weight: float = 0.1) -> None:
+    def __init__(
+        self,
+        reconstruction_weight: float = 0.1,
+        class_weights: Optional[torch.Tensor] = None,
+    ) -> None:
         super().__init__()
-        self.cross_entropy = nn.CrossEntropyLoss()
+        self.cross_entropy = nn.CrossEntropyLoss(weight=class_weights)
         self.mse = nn.MSELoss()
         self.reconstruction_weight = reconstruction_weight
 

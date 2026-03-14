@@ -10,8 +10,25 @@ from audron.data.dataset import AudioManifestDataset
 from audron.models.audron import Audron
 from audron.training.engine import fit
 from audron.utils.config import apply_overrides, load_yaml, save_yaml
-from audron.utils.io import ensure_dir
+from audron.utils.io import ensure_dir, read_jsonl
 from audron.utils.seed import set_seed
+
+
+def balanced_class_weights(manifest_path: Path, num_classes: int) -> torch.Tensor | None:
+    """Compute inverse-frequency class weights for imbalanced data. Returns tensor of shape (num_classes,) or None if empty."""
+    rows = read_jsonl(manifest_path)
+    if not rows:
+        return None
+    counts = [0] * num_classes
+    for r in rows:
+        lid = int(r['label_id'])
+        if 0 <= lid < num_classes:
+            counts[lid] += 1
+    total = sum(counts)
+    if total == 0:
+        return None
+    weights = [total / (num_classes * c) if c > 0 else 1.0 for c in counts]
+    return torch.tensor(weights, dtype=torch.float32)
 
 
 def main() -> None:
@@ -50,7 +67,18 @@ def main() -> None:
 
     device = torch.device(args.device)
     model = Audron(cfg).to(device)
-    summary = fit(model, train_loader, val_loader, cfg, output_dir=output_dir, device=device)
+
+    class_weights = None
+    if cfg['train'].get('class_weights') in ('balanced', 'auto'):
+        class_weights = balanced_class_weights(args.train_manifest, cfg['task']['num_classes'])
+        if class_weights is not None:
+            print('Class weights (balanced):', class_weights.tolist())
+
+    summary = fit(
+        model, train_loader, val_loader, cfg,
+        output_dir=output_dir, device=device,
+        class_weights=class_weights,
+    )
     print(summary)
 
 

@@ -1,8 +1,10 @@
+# DroneAudioDataset (binary): 16 kHz, mono; clips ~0.75–1.2 s. Padded to 3 s (repeat) for fixed input.
+# Train set is imbalanced (~89% noise, ~11% drone). class_weights: balanced compensates in the loss.
 seed: 42
 
 data:
-  sample_rate: 16000
-  clip_duration_sec: 3.0
+  sample_rate: 16000   # matches DroneAudioDataset
+  clip_duration_sec: 3.0   # model expects 48k samples; ~1 s clips are repeat-padded
   pad_mode: repeat
   normalize_audio: true
 
@@ -32,6 +34,7 @@ train:
   scheduler_patience: 5
   early_stopping_patience: 10
   reconstruction_weight: 0.1
+  class_weights: balanced   # inverse-frequency weighting for drone vs noise imbalance
   num_workers: 0
   torch_num_threads: 1
 
